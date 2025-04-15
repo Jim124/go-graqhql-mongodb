@@ -45,7 +45,7 @@ func Connect() *DB {
 }
 func (db *DB) GetJob(id string) *model.JobListing {
 	jobCollec := db.client.Database("GoGraqh").Collection("jobs")
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	fmt.Println(id)
 	objectId, _ := bson.ObjectIDFromHex(id)
@@ -60,7 +60,7 @@ func (db *DB) GetJob(id string) *model.JobListing {
 
 func (db *DB) InsertJob(createJobInput model.CreatingJobListingInput) *model.JobListing {
 	jobCollec := db.client.Database("GoGraqh").Collection("jobs")
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	newJob := model.JobListing{
 		Title:       createJobInput.Title,
@@ -80,7 +80,7 @@ func (db *DB) InsertJob(createJobInput model.CreatingJobListingInput) *model.Job
 
 func (db *DB) GetJobs() []*model.JobListing {
 	jobCollec := db.client.Database("GoGraqh").Collection("jobs")
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	var jobs []*model.JobListing
 	cursor, err := jobCollec.Find(ctx, bson.D{})
@@ -95,7 +95,7 @@ func (db *DB) GetJobs() []*model.JobListing {
 
 func (db *DB) UpdateJob(id string, updateJobInput model.UpdateJobListingInput) *model.JobListing {
 	jobCollec := db.client.Database("GoGraqh").Collection("jobs")
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	updateJob := bson.M{}
 	objId, _ := bson.ObjectIDFromHex(id)
@@ -124,5 +124,17 @@ func (db *DB) UpdateJob(id string, updateJobInput model.UpdateJobListingInput) *
 }
 
 func (db *DB) DeleteJob(id string) *model.DeleteJobResponse {
-	return nil
+	jobCollect := db.client.Database("GoGraqh").Collection("jobs")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	objectId, _ := bson.ObjectIDFromHex(id)
+	filter := bson.D{{Key: "_id", Value: objectId}}
+	_, err := jobCollect.DeleteOne(ctx, filter)
+	// Prints a message if any errors occur during the operation
+	if err != nil {
+		log.Fatal(err)
+	}
+	return &model.DeleteJobResponse{
+		DeleteJobID: id,
+	}
 }
